@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diwali Greetings - Save to Google Sheets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .diwali-font {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #ff9933, #ffcc00, #138808);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .rangoli-pattern {
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 153, 51, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 204, 0, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(19, 136, 8, 0.2) 0%, transparent 50%);
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translate(0, 0px); }
+            50% { transform: translate(0, 15px); }
+            100% { transform: translate(0, -0px); }
+        }
+        
+        .flicker {
+            animation: flicker 3s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+            20%, 24%, 55% { opacity: 0.5; }
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px #ffcc00;
+            animation: sparkle 2s infinite;
+        }
+        
+        @keyframes sparkle {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1) rotate(360deg); opacity: 0; }
+        }
+        
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px rgba(255, 153, 51, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 153, 51, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 153, 51, 0.5); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.8s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .personalized-greeting {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #ff9933, #ffcc00, #138808);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 153, 51, 0.5);
+        }
+        
+        .save-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            display: none;
+            align-items: center;
+        }
+        
+        .save-status.show {
+            display: flex;
+            animation: slideInStatus 0.5s forwards;
+        }
+        
+        @keyframes slideInStatus {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .save-success { color: #4ade80; }
+        .save-error { color: #f87171; }
+        
+        .comment-section {
+            transition: all 0.8s ease-out;
+        }
+        
+        .greeting-card {
+            display: none;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.8s ease-out;
+        }
+        
+        .greeting-card.show {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .comment-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .comment-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 500ms, transform 500ms;
+        }
+        
+        .google-sheets-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            z-index: 100;
+        }
+        
+        .sheets-connected {
+            color: #4ade80;
+        }
+        
+        .sheets-disconnected {
+            color: #f87171;
+        }
+        
+        /* Enhanced Lamp Styles */
+        .corner-lamp {
+            position: absolute;
+            width: 80px;
+            height: 100px;
+            z-index: 30;
+        }
+        
+        .top-left {
+            top: 20px;
+            left: 20px;
+        }
+        
+        .top-right {
+            top: 20px;
+            right: 20px;
+        }
+        
+        .bottom-left {
+            bottom: 20px;
+            left: 20px;
+        }
+        
+        .bottom-right {
+            bottom: 20px;
+            right: 20px;
+        }
+        
+        .lamp-body {
+            width: 40px;
+            height: 80px;
+            background: linear-gradient(to bottom, #ff9933, #ffcc00, #ff9933);
+            margin: 0 auto;
+            border-radius: 20px 20px 8px 8px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(255, 153, 51, 0.7);
+        }
+        
+        .lamp-flame {
+            width: 25px;
+            height: 40px;
+            background: radial-gradient(ellipse at center, #ffcc00 0%, #ff9933 70%, transparent 100%);
+            border-radius: 50% 50% 20% 20%;
+            margin: 0 auto;
+            position: relative;
+            top: -15px;
+            box-shadow: 0 0 25px 10px rgba(255, 204, 0, 0.7);
+            animation: flameFlicker 2s infinite alternate;
+        }
+        
+        @keyframes flameFlicker {
+            0%, 100% { transform: scaleY(1) scaleX(1); opacity: 0.9; }
+            25% { transform: scaleY(1.1) scaleX(0.9); opacity: 1; }
+            50% { transform: scaleY(0.9) scaleX(1.1); opacity: 0.8; }
+            75% { transform: scaleY(1.05) scaleX(0.95); opacity: 1; }
+        }
+        
+        /* Firecracker Styles */
+        .firecracker {
+            position: absolute;
+            width: 8px;
+            height: 25px;
+            background: linear-gradient(to bottom, #ff3333, #ff9933);
+            border-radius: 4px;
+            z-index: 15;
+        }
+        
+        .firecracker::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 5px;
+            background: #ffcc00;
+            top: -2px;
+            left: -2px;
+            border-radius: 2px;
+        }
+        
+        .firecracker::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 10px;
+            background: #ffcc00;
+            bottom: -10px;
+            left: 2px;
+            border-radius: 2px;
+        }
+        
+        .firecracker-burst {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 20px 5px #ff3333,
+                0 0 40px 10px #ff9933,
+                0 0 60px 15px #ffcc00;
+            animation: burst 1.5s ease-out forwards;
+        }
+        
+        @keyframes burst {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        
+        /* Sparkler (Chudchhuri) Styles */
+        .sparkler {
+            position: absolute;
+            width: 3px;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent, #ffcc00, #ff9933, #ff3333);
+            border-radius: 2px;
+            z-index: 15;
+            animation: sparkleMove 4s linear infinite;
+        }
+        
+        .sparkler::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, #ffcc00, #ff9933, #ff3333);
+            border-radius: 2px;
+            filter: blur(5px);
+            animation: sparkleGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes sparkleMove {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+        
+        @keyframes sparkleGlow {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Background Fireworks */
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px #ff9933;
+            animation: fireworkLaunch 4s ease-out infinite;
+        }
+        
+        @keyframes fireworkLaunch {
+            0% { transform: translateY(100vh); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(0); opacity: 0; }
+        }
+        
+        .firework-burst {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            animation: fireworkBurst 1s ease-out forwards;
+        }
+        
+        @keyframes fireworkBurst {
+            0% { transform: scale(0); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 153, 51, 0.7); }
+            100% { transform: scale(1); opacity: 0; box-shadow: 0 0 0 50px rgba(255, 153, 51, 0); }
+        }
+        
+        /* Background Images */
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+            z-index: 5;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.7) 0%, rgba(22, 33, 62, 0.7) 100%);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 rangoli-pattern">
+    <!-- Google Sheets Status -->
+    <div id="sheets-status" class="google-sheets-status">
+        <i id="sheets-icon" class="fas fa-table mr-2"></i>
+        <span id="sheets-message">Connecting to Google Sheets...</span>
+    </div>
+
+    <!-- Save Status Indicator -->
+    <div id="save-status" class="save-status">
+        <i id="save-icon" class="save-icon mr-2"></i>
+        <span id="save-message"></span>
+    </div>
+
+    <!-- Initial Comment Section -->
+    <div id="comment-section" class="max-w-2xl w-full bg-gradient-to-br from-purple-900/40 to-blue-900/40 backdrop-blur-lg rounded-3xl overflow-hidden shadow-2xl border border-white/10 p-8 relative">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-amber-500 rounded-full mx-auto mb-4 flex items-center justify-center floating">
+                <div class="w-8 h-12 bg-yellow-300 rounded-full flicker"></div>
+            </div>
+            <h1 class="diwali-font text-4xl font-bold mb-4 gradient-text">Share Your Diwali Wish</h1>
+            <p class="text-amber-200">Post a wish to receive your personalized Diwali greeting</p>
+        </div>
+        
+        <!-- Comment Form -->
+        <div class="mb-8">
+            <form id="comment-form" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-amber-200 mb-2">Your Name</label>
+                    <input type="text" id="name" required 
+                        class="w-full px-4 py-3 bg-white/10 border border-amber-500/30 rounded-lg text-white placeholder-amber-200/50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-300"
+                        placeholder="Enter your name">
+                </div>
+                <div>
+                    <label for="message" class="block text-amber-200 mb-2">Your Diwali Wish</label>
+                    <textarea id="message" rows="4" required
+                        class="w-full px-4 py-3 bg-white/10 border border-amber-500/30 rounded-lg text-white placeholder-amber-200/50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-300"
+                        placeholder="Share your Diwali wishes..."></textarea>
+                </div>
+                <button type="submit" 
+                    class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg shadow-lg hover:scale-[1.02] transition-all duration-300 flex items-center justify-center pulse-glow">
+                    <i class="fas fa-paper-plane mr-2"></i> Post Wish & Get Your Greeting
+                </button>
+            </form>
+        </div>
+        
+        <!-- Previous Comments -->
+        <div class="mt-8">
+            <h2 class="diwali-font text-2xl font-bold text-center mb-4 gradient-text">Recent Wishes</h2>
+            <div id="comments-container" class="max-h-80 overflow-y-auto space-y-4 pr-2">
+                <!-- Comments will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Personalized Diwali Greeting Card -->
+    <div id="greeting-card" class="greeting-card max-w-4xl w-full bg-gradient-to-br from-purple-900/40 to-blue-900/40 backdrop-blur-lg rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative">
+        <!-- Background Images Container -->
+        <div id="background-images-container" class="absolute inset-0 overflow-hidden rounded-3xl">
+            <!-- Background overlay -->
+            <div class="background-overlay"></div>
+            <!-- Background images will be added here dynamically -->
+        </div>
+        
+        <!-- Corner Lamps -->
+        <div class="corner-lamp top-left">
+            <div class="lamp-body">
+                <div class="lamp-flame"></div>
+            </div>
+        </div>
+        
+        <div class="corner-lamp top-right">
+            <div class="lamp-body">
+                <div class="lamp-flame"></div>
+            </div>
+        </div>
+        
+        <div class="corner-lamp bottom-left">
+            <div class="lamp-body">
+                <div class="lamp-flame"></div>
+            </div>
+        </div>
+        
+        <div class="corner-lamp bottom-right">
+            <div class="lamp-body">
+                <div class="lamp-flame"></div>
+            </div>
+        </div>
+        
+        <!-- Firecrackers Container -->
+        <div id="firecrackers-container"></div>
+        
+        <!-- Sparklers Container -->
+        <div id="sparklers-container"></div>
+        
+        <!-- Background Fireworks -->
+        <div id="fireworks-container"></div>
+        
+        <!-- Sparkles Container -->
+        <div id="sparkles-container"></div>
+        
+        <div class="p-8 lg:p-12 flex flex-col justify-center items-center text-center min-h-[600px] relative z-20">
+            <div class="mb-8">
+                <h1 class="diwali-font text-5xl md:text-6xl font-bold mb-4 gradient-text">Happy Diwali</h1>
+                <h2 id="personalized-name" class="diwali-font personalized-greeting mb-2"></h2>
+                <p class="text-xl text-amber-200">This special greeting is just for you!</p>
+            </div>
+            
+            <div class="max-w-2xl mx-auto mb-8">
+                <p class="text-amber-100 leading-relaxed text-lg">
+                    May the divine light of Diwali spread into your life, <span id="personalized-message" class="font-bold text-amber-300"></span>. 
+                    Wishing you and your family a sparkling and bright Diwali filled with endless joy and sweet moments!
+                </p>
+            </div>
+            
+            <button id="fireworks-btn" class="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-300 mb-6 pulse-glow">
+                <i class="fas fa-fire mr-2"></i> Launch More Fireworks
+            </button>
+            
+            <div class="flex flex-wrap justify-center gap-4 mt-4">
+                <button class="share-btn px-6 py-2 bg-green-500 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-300 flex items-center">
+                    <i class="fab fa-whatsapp mr-2"></i> Share
+                </button>
+                <button class="share-btn px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-300 flex items-center">
+                    <i class="fab fa-facebook-f mr-2"></i> Share
+                </button>
+                <button class="share-btn px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-300 flex items-center">
+                    <i class="fab fa-instagram mr-2"></i> Share
+                </button>
+            </div>
+            
+            <div class="mt-8">
+                <button id="back-to-wishes-btn" class="px-6 py-2 bg-white/10 text-amber-200 font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-300 flex items-center border border-amber-500/30">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Wishes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Google Apps Script Web App URL - REPLACE WITH YOUR OWN
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvMHNK2LjT9r958xr8tg6XwGqVJTJiWlHY2Ikd8ci9uifeAY6Iy5E49PMXprDUxuB5Ug/exec';
+        
+        // Collection of Diwali background images - ADD YOUR LOCAL IMAGE HERE
+        const DIWALI_IMAGES = [
+            'image1.jpg',  // Your local image - make sure it's in the same folder as your HTML file
+            'https://images.unsplash.com/photo-1605206643195-29b1582f2e7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZGl3YWxpfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60',
+            'https://images.unsplash.com/photo-1572375992501-4b0892d50c69?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZGl3YWxpfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60',
+            'https://images.unsplash.com/photo-1548351848-8e89c01c6ae9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGRpd2FsaXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+            'https://images.unsplash.com/photo-1605299916143-57d7138985d5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGRpd2FsaXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+            'https://images.unsplash.com/photo-1633617477140-60d3c84b50a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGRpd2FsaXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+            'https://images.unsplash.com/photo-1605206643062-30efc56590c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fGRpd2FsaXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+            'https://images.unsplash.com/photo-1633617477271-d4f351ff7c7c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjJ8fGRpd2FsaXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+            'https://images.unsplash.com/photo-1604866830897-c76d2a47e6e9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fGRpd2FsaXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'
+        ];
+        
+        // Main application logic
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize elements
+            const saveStatus = document.getElementById('save-status');
+            const saveIcon = document.getElementById('save-icon');
+            const saveMessage = document.getElementById('save-message');
+            const sheetsStatus = document.getElementById('sheets-status');
+            const sheetsIcon = document.getElementById('sheets-icon');
+            const sheetsMessage = document.getElementById('sheets-message');
+            const commentSection = document.getElementById('comment-section');
+            const greetingCard = document.getElementById('greeting-card');
+            const commentForm = document.getElementById('comment-form');
+            const commentsContainer = document.getElementById('comments-container');
+            const backgroundContainer = document.getElementById('background-images-container');
+            
+            // Create visual effects
+            createSparkles();
+            createFirecrackers();
+            createSparklers();
+            createBackgroundFireworks();
+            
+            // Load existing comments
+            loadComments();
+            
+            // Test Google Sheets connection
+            testGoogleSheetsConnection();
+            
+            // Form submission handler
+            commentForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const message = document.getElementById('message').value;
+                
+                if (name && message) {
+                    // Save the wish to both Google Sheets and localStorage
+                    const savedToSheets = await saveWishToGoogleSheets(name, message);
+                    saveWishToLocalStorage(name, message);
+                    
+                    // Add to UI
+                    addComment(name, message);
+                    
+                    // Show personalized greeting (hides comment section automatically)
+                    showGreeting(name, message);
+                    
+                    // Reset form
+                    commentForm.reset();
+                }
+            });
+            
+            // Event listeners for buttons
+            document.getElementById('fireworks-btn').addEventListener('click', launchFireworks);
+            document.getElementById('back-to-wishes-btn').addEventListener('click', showCommentSection);
+            
+            // Social sharing buttons
+            document.querySelectorAll('.share-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    shareGreeting(this);
+                });
+            });
+            
+            // Function to create random background images
+            function createBackgroundImages() {
+                // Clear existing background images
+                const existingImages = backgroundContainer.querySelectorAll('.background-image');
+                existingImages.forEach(img => img.remove());
+                
+                // Use your local image as the primary background
+                const localImage = DIWALI_IMAGES[0]; // Your image1.jpg
+                
+                const img = document.createElement('img');
+                img.src = localImage;
+                img.alt = 'Happy Diwali';
+                img.classList.add('background-image');
+                img.style.objectPosition = 'center';
+                backgroundContainer.appendChild(img);
+                
+                // Optional: Add one random online image for variety
+                const randomIndex = Math.floor(Math.random() * (DIWALI_IMAGES.length - 1)) + 1;
+                const randomImage = DIWALI_IMAGES[randomIndex];
+                
+                const img2 = document.createElement('img');
+                img2.src = randomImage;
+                img2.alt = 'Happy Diwali';
+                img2.classList.add('background-image');
+                img2.style.objectPosition = 'top left';
+                backgroundContainer.appendChild(img2);
+            }
+            
+            // Function to create firecrackers
+            function createFirecrackers() {
+                const container = document.getElementById('firecrackers-container');
+                const firecrackerCount = 8;
+                
+                for (let i = 0; i < firecrackerCount; i++) {
+                    const firecracker = document.createElement('div');
+                    firecracker.classList.add('firecracker');
+                    firecracker.style.left = `${10 + (i * 10)}%`;
+                    firecracker.style.bottom = '20px';
+                    firecracker.style.animationDelay = `${i * 0.5}s`;
+                    container.appendChild(firecracker);
+                    
+                    // Create burst effect
+                    setTimeout(() => {
+                        const burst = document.createElement('div');
+                        burst.classList.add('firecracker-burst');
+                        burst.style.left = firecracker.style.left;
+                        burst.style.bottom = '60px';
+                        container.appendChild(burst);
+                        
+                        // Remove burst after animation
+                        setTimeout(() => {
+                            container.removeChild(burst);
+                        }, 1500);
+                    }, i * 1000);
+                }
+            }
+            
+            // Function to create sparklers (chudchhuri)
+            function createSparklers() {
+                const container = document.getElementById('sparklers-container');
+                const sparklerCount = 15;
+                
+                for (let i = 0; i < sparklerCount; i++) {
+                    const sparkler = document.createElement('div');
+                    sparkler.classList.add('sparkler');
+                    sparkler.style.left = `${Math.random() * 100}%`;
+                    sparkler.style.bottom = '0';
+                    sparkler.style.animationDelay = `${Math.random() * 5}s`;
+                    container.appendChild(sparkler);
+                }
+            }
+            
+            // Function to create background fireworks
+            function createBackgroundFireworks() {
+                const container = document.getElementById('fireworks-container');
+                
+                setInterval(() => {
+                    const firework = document.createElement('div');
+                    firework.classList.add('firework');
+                    firework.style.left = `${10 + Math.random() * 80}%`;
+                    firework.style.bottom = '0';
+                    container.appendChild(firework);
+                    
+                    // Create burst after a delay
+                    setTimeout(() => {
+                        const burst = document.createElement('div');
+                        burst.classList.add('firework-burst');
+                        burst.style.left = firework.style.left;
+                        burst.style.bottom = `${30 + Math.random() * 50}%`;
+                        container.appendChild(burst);
+                        
+                        // Remove elements after animation
+                        setTimeout(() => {
+                            container.removeChild(firework);
+                            container.removeChild(burst);
+                        }, 1000);
+                    }, 800);
+                }, 1500);
+            }
+            
+            // Function to test Google Sheets connection using JSONP approach
+            function testGoogleSheetsConnection() {
+                // Create a unique callback name
+                const callbackName = 'testConnection_' + Date.now();
+                
+                // Create the script element
+                const script = document.createElement('script');
+                
+                // Define the callback function
+                window[callbackName] = function(response) {
+                    // Clean up
+                    delete window[callbackName];
+                    document.head.removeChild(script);
+                    
+                    if (response.status === 'success') {
+                        updateSheetsStatus(true, 'Connected to Google Sheets');
+                    } else {
+                        updateSheetsStatus(false, 'Google Sheets not connected');
+                    }
+                };
+                
+                // Construct the URL with JSONP parameters
+                const url = `${GOOGLE_SCRIPT_URL}?callback=${callbackName}&action=test&name=Test&message=Test%20Connection`;
+                
+                script.src = url;
+                document.head.appendChild(script);
+                
+                // Set a timeout in case the request fails
+                setTimeout(() => {
+                    if (window[callbackName]) {
+                        delete window[callbackName];
+                        document.head.removeChild(script);
+                        updateSheetsStatus(false, 'Google Sheets connection timeout');
+                    }
+                }, 5000);
+            }
+            
+            // Function to update Google Sheets status
+            function updateSheetsStatus(isConnected, message) {
+                sheetsMessage.textContent = message;
+                sheetsIcon.className = `fas fa-table mr-2 ${isConnected ? 'sheets-connected' : 'sheets-disconnected'}`;
+                sheetsStatus.style.borderColor = isConnected ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)';
+            }
+            
+            // Function to save wish to Google Sheets using JSONP
+            function saveWishToGoogleSheets(name, message) {
+                return new Promise((resolve) => {
+                    // Create a unique callback name
+                    const callbackName = 'saveWish_' + Date.now();
+                    
+                    // Create the script element
+                    const script = document.createElement('script');
+                    
+                    // Define the callback function
+                    window[callbackName] = function(response) {
+                        // Clean up
+                        delete window[callbackName];
+                        document.head.removeChild(script);
+                        
+                        if (response.status === 'success') {
+                            showSaveStatus('Wish saved to Google Sheets!', true);
+                            console.log('Data saved to Google Sheets');
+                            resolve(true);
+                        } else {
+                            showSaveStatus('Failed to save to Google Sheets', false);
+                            resolve(false);
+                        }
+                    };
+                    
+                    // Construct the URL with JSONP parameters
+                    const url = `${GOOGLE_SCRIPT_URL}?callback=${callbackName}&name=${encodeURIComponent(name)}&message=${encodeURIComponent(message)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+                    
+                    script.src = url;
+                    document.head.appendChild(script);
+                    
+                    // Set a timeout in case the request fails
+                    setTimeout(() => {
+                        if (window[callbackName]) {
+                            delete window[callbackName];
+                            document.head.removeChild(script);
+                            showSaveStatus('Saved locally (Google Sheets timeout)', false);
+                            resolve(false);
+                        }
+                    }, 5000);
+                });
+            }
+            
+            // Function to save wish to localStorage
+            function saveWishToLocalStorage(name, message) {
+                try {
+                    const wishes = JSON.parse(localStorage.getItem('diwaliWishes') || '[]');
+                    const newWish = {
+                        name: name,
+                        message: message,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    wishes.push(newWish);
+                    localStorage.setItem('diwaliWishes', JSON.stringify(wishes));
+                    
+                    console.log('Wish saved to localStorage:', newWish);
+                } catch (error) {
+                    console.error('Error saving wish to localStorage:', error);
+                }
+            }
+            
+            // Function to load comments from localStorage
+            function loadComments() {
+                try {
+                    const wishes = JSON.parse(localStorage.getItem('diwaliWishes') || '[]');
+                    
+                    // Clear container
+                    commentsContainer.innerHTML = '';
+                    
+                    if (wishes.length === 0) {
+                        commentsContainer.innerHTML = `
+                            <div class="text-center text-amber-200/70 py-8">
+                                <p>No wishes yet. Be the first to share your Diwali wish!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Sort by timestamp (newest first) and display
+                    wishes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    
+                    wishes.slice(0, 10).forEach(wish => {
+                        addComment(wish.name, wish.message, wish.timestamp, false);
+                    });
+                } catch (error) {
+                    console.error('Error loading wishes:', error);
+                }
+            }
+            
+            // Function to add comment to UI
+            function addComment(name, message, timestamp = null, animate = true) {
+                const dateString = timestamp ? 
+                    new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                    "Just now";
+                
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'bg-white/10 backdrop-blur-md rounded-2xl p-4 shadow-lg border-l-4 border-amber-500';
+                
+                if (animate) {
+                    commentDiv.classList.add('comment-enter');
+                }
+                
+                commentDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-amber-300">${name}</h3>
+                        <span class="text-amber-200/70 text-sm">${dateString}</span>
+                    </div>
+                    <p class="text-amber-100 text-sm">${message}</p>
+                `;
+                
+                commentsContainer.prepend(commentDiv);
+                
+                if (animate) {
+                    setTimeout(() => {
+                        commentDiv.classList.add('comment-enter-active');
+                    }, 10);
+                }
+            }
+            
+            // Function to show personalized greeting (hides comment section)
+            function showGreeting(name, message) {
+                document.getElementById('personalized-name').textContent = name + '!';
+                
+                let personalizedMsg = "bringing you peace, prosperity, happiness, and good health";
+                
+                if (message.length > 0) {
+                    const words = message.split(' ');
+                    if (words.length > 5) {
+                        personalizedMsg = words.slice(0, 7).join(' ') + '...';
+                    } else {
+                        personalizedMsg = message;
+                    }
+                }
+                
+                document.getElementById('personalized-message').textContent = personalizedMsg;
+                
+                // Create background images with your local image as primary
+                createBackgroundImages();
+                
+                // Hide comment section and show greeting card
+                commentSection.style.display = 'none';
+                greetingCard.classList.add('show');
+                
+                // Launch celebration
+                launchCelebration();
+            }
+            
+            // Function to show comment section (hides greeting card)
+            function showCommentSection() {
+                greetingCard.classList.remove('show');
+                setTimeout(() => {
+                    greetingCard.style.display = 'none';
+                    commentSection.style.display = 'block';
+                }, 300);
+            }
+            
+            // Function to show save status
+            function showSaveStatus(message, isSuccess) {
+                saveMessage.textContent = message;
+                saveIcon.className = `fas ${isSuccess ? 'fa-check-circle save-success' : 'fa-exclamation-circle save-error'}`;
+                saveStatus.classList.add('show');
+                
+                setTimeout(() => {
+                    saveStatus.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Function to create sparkle effects
+            function createSparkles() {
+                const container = document.getElementById('sparkles-container');
+                const sparkleCount = 20;
+                
+                for (let i = 0; i < sparkleCount; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.classList.add('sparkle');
+                    sparkle.style.left = `${Math.random() * 100}%`;
+                    sparkle.style.top = `${Math.random() * 100}%`;
+                    sparkle.style.animationDelay = `${Math.random() * 5}s`;
+                    container.appendChild(sparkle);
+                }
+            }
+            
+            // Function to launch celebration
+            function launchCelebration() {
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.6 },
+                    colors: ['#ff9933', '#ffcc00', '#138808', '#ffffff']
+                });
+            }
+            
+            // Function to launch fireworks
+            function launchFireworks() {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ff9933', '#ffcc00', '#138808', '#ffffff']
+                });
+            }
+            
+            // Function to share greeting
+            function shareGreeting(button) {
+                const text = "Check out my personalized Diwali greeting! Wishing you a Happy Diwali!";
+                const url = window.location.href;
+                
+                if (button.querySelector('.fa-whatsapp')) {
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                } else if (button.querySelector('.fa-facebook-f')) {
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                } else if (button.querySelector('.fa-instagram')) {
+                    alert('Share this URL on Instagram: ' + url);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
